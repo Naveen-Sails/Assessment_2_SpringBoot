@@ -1,6 +1,8 @@
 package online.store.services;
 
+import online.store.mappers.ProductMapper;
 import online.store.model.Product;
+import online.store.model.dto.ProductDTO;
 import online.store.repositories.ProductCategoryRepository;
 import online.store.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -15,10 +17,12 @@ import java.util.stream.Collectors;
 public class ProductsService {
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
+    private final ProductMapper productMapper;
 
-    public ProductsService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository) {
+    public ProductsService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
+        this.productMapper = productMapper;
     }
 
     public List<String> getAllSupportedCategories(){
@@ -29,8 +33,11 @@ public class ProductsService {
 
     }
 
-    public List<Product> getDealsOfTheDay(int atMostNumberOfProducts){
-        return productRepository.findAtMostNumberOfProducts(atMostNumberOfProducts);
+    public List<ProductDTO> getDealsOfTheDay(int atMostNumberOfProducts){
+        return productRepository.findAtMostNumberOfProducts(atMostNumberOfProducts)
+                .stream()
+                .map(productMapper :: toDTO) // Converts each Product entity to a DTO
+                .collect(Collectors.toList());
     }
 
     public List<Product> getProductsByCategory(String productCategory){
