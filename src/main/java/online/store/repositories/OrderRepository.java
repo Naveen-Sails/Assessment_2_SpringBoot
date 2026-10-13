@@ -2,6 +2,8 @@ package online.store.repositories;
 
 import online.store.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      *
      * @return the list of orders that were successfully saved
      */
+
+    //JPQL does not supports INSERT
     <S extends Order> List<S> saveAll(Iterable<S> orders);
 
     /**
@@ -26,5 +30,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      *
      * @return a list of orders for the given user
      */
-    List<Order> findByFirstNameAndLastName(String firstName, String lastName);
+
+    //Overriding the findByFirstNameAndLastName
+    @Query("SELECT O FROM Order o WHERE o.firstName = :firstName AND o.lastName = :lastName")
+    List<Order> findByFirstNameAndLastName(@Param("firstName") String firstName, @Param("lastName") String lastName);
 }
