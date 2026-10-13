@@ -3,6 +3,9 @@ package online.store.services;
 import online.store.model.Product;
 import online.store.repositories.ProductCategoryRepository;
 import online.store.repositories.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +47,17 @@ public class ProductsService {
     public Product getProductById(long id){
         return productRepository.findById(id)
                 .orElseThrow(()-> new IllegalStateException(String.format("Product with id %s doesn't exist", id)));
+    }
+
+    public Page<Product> getProducts(int pageNumber, int limit){
+        // Convert 1-based user input to 0-based Spring input
+        int actualPage = pageNumber > 0 ? pageNumber -1 : 0;
+
+        //Create the Pageable object
+        Pageable pageable = PageRequest.of(actualPage, limit);
+
+        //Fetch and return the page of Products
+        return productRepository.findAll(pageable);
     }
 
 }
