@@ -4,6 +4,8 @@ import online.store.model.Product;
 import online.store.repositories.ProductCategoryRepository;
 import online.store.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +46,10 @@ public class ProductsService {
     public Product getProductById(long id){
         return productRepository.findById(id)
                 .orElseThrow(()-> new IllegalStateException(String.format("Product with id %s doesn't exist", id)));
+    }
+
+    public List<Product> getFilteredProducts(String category, BigDecimal minPrice, BigDecimal maxPrice, String search){
+        return productRepository.findWithDynamicFilters(category, minPrice, maxPrice, search);
     }
 
 }
