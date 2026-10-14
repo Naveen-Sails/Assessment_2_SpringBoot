@@ -1,0 +1,17 @@
+$kind: http-request
+description: Checks the inclusive minimum and maximum price filters.
+url: "{{baseUrl}}/products?minPrice=10&maxPrice=50"
+method: GET
+queryParams:
+  minPrice: "10"
+  maxPrice: "50"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      pm.response.json().products.forEach(function (product) {
+          pm.expect(product.priceUSD).to.be.at.least(10);
+          pm.expect(product.priceUSD).to.be.at.most(50);
+      });
+    language: text/javascript
+order: 5000

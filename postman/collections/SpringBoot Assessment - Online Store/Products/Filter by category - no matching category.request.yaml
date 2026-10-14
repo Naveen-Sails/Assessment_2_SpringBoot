@@ -1,0 +1,15 @@
+$kind: http-request
+description: Checks the empty-result case for a category that does not exist.
+url: "{{baseUrl}}/products?category=does-not-exist"
+method: GET
+queryParams:
+  category: does-not-exist
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      pm.test('Returns no products', function () {
+          pm.expect(pm.response.json().products).to.be.empty;
+      });
+    language: text/javascript
+order: 4000

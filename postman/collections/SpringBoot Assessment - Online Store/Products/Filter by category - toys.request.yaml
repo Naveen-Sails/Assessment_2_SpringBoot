@@ -1,0 +1,15 @@
+$kind: http-request
+description: Checks that category filtering returns only toys.
+url: "{{baseUrl}}/products?category=toys"
+method: GET
+queryParams:
+  category: toys
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      pm.response.json().products.forEach(function (product) {
+          pm.expect(product.category).to.eql('toys');
+      });
+    language: text/javascript
+order: 3000

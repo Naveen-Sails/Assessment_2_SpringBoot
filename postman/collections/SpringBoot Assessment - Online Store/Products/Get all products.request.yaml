@@ -1,0 +1,18 @@
+$kind: http-request
+description: Lists products and saves the first returned product ID for checkout scenarios.
+url: "{{baseUrl}}/products"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      const data = pm.response.json();
+      pm.test('Returns a product list', function () {
+          pm.expect(data).to.have.property('products').that.is.an('array');
+          pm.expect(data.products.length).to.be.above(0);
+      });
+      if (data.products && data.products.length > 0) {
+          pm.collectionVariables.set('productId', String(data.products[0].id));
+      }
+    language: text/javascript
+order: 2000

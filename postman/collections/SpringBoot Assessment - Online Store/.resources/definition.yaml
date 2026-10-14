@@ -1,0 +1,6 @@
+$kind: collection
+description: Manual API scenarios for the Spring Boot online store. Uses a dummy credit-card number; never use real payment details. Start the app on port 8081 before sending requests. Run Get all products first to set the productId collection variable used by checkout requests.
+variables:
+  baseUrl: http://localhost:8081
+  productId: "1"
+  missingProductId: "999999"

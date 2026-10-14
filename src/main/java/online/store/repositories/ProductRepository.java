@@ -3,40 +3,60 @@ package online.store.repositories;
 import online.store.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * @author Michael Pogrebinsky - www.topdeveloperacademy.com
- * This represents an API through which we can perform CRUD operations against the
- * Products table in the database
- * You do not need to modify this file
- */
-@Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    /**
-     * Returns all products in the Products table
-     */
+    @Override
+    @Query("SELECT p FROM Product p")
+    @NonNull
     List<Product> findAll();
 
-    /**
-     * Looks for a product by id in the Products table
-     * @return the product that matches the given id or Optional.empty
-     */
-    Optional<Product> findById(Long productId);
+    @Override
+    @Query("SELECT p FROM Product p WHERE p.id = :productId")
+    @NonNull
+    Optional<Product> findById(@NonNull @Param("productId") Long productId);
 
-    /**
-     * Looks for all the products that match the given category
-     */
-    List<Product> findByCategory(String productCategory);
+    @Override
+    @Query("SELECT p FROM Product p ORDER BY p.id")
+    @NonNull
+    Page<Product> findAll(@NonNull Pageable pageable);
 
-    /**
-     * Returns at most numberOfProducts from a database
-     */
+    @Query("SELECT p FROM Product p WHERE p.category = :productCategory")
+    List<Product> findByCategory(@Param("productCategory") String productCategory);
+
+    @Query(
+            value = "SELECT p FROM Product p " +
+                    "WHERE (:category IS NULL OR :category = '' OR p.category = :category) " +
+                    "AND (:minPrice IS NULL OR p.priceUSD >= :minPrice) " +
+                    "AND (:maxPrice IS NULL OR p.priceUSD <= :maxPrice) " +
+                    "AND (:search IS NULL OR :search = '' " +
+                    "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                    "ORDER BY p.id",
+            countQuery = "SELECT COUNT(p) FROM Product p " +
+                    "WHERE (:category IS NULL OR :category = '' OR p.category = :category) " +
+                    "AND (:minPrice IS NULL OR p.priceUSD >= :minPrice) " +
+                    "AND (:maxPrice IS NULL OR p.priceUSD <= :maxPrice) " +
+                    "AND (:search IS NULL OR :search = '' " +
+                    "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))"
+    )
+    Page<Product> findProducts(
+            @Param("category") String category,
+            @Param("minPrice") Float minPrice,
+            @Param("maxPrice") Float maxPrice,
+            @Param("search") String search,
+            Pageable pageable
+    );
+
     default List<Product> findAtMostNumberOfProducts(int numberOfProducts) {
         Page<Product> page = findAll(PageRequest.of(0, numberOfProducts));
         return page.toList();

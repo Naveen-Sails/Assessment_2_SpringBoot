@@ -2,7 +2,8 @@ package online.store.repositories;
 
 import online.store.model.ProductCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
@@ -12,11 +13,10 @@ import java.util.List;
  * ProductsCategories table in the database
  * You do not need to modify this file
  */
-@Repository
 public interface ProductCategoryRepository extends JpaRepository<ProductCategory, Long> {
 
-    /**
-     * Returns all the available categories of products in our online store
-     */
+    @Override
+    @Query("SELECT category FROM ProductCategory category")
+    @NonNull
     List<ProductCategory> findAll();
 }

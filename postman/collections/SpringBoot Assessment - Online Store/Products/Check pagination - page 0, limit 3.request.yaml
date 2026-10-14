@@ -1,0 +1,20 @@
+$kind: http-request
+description: Checks the first (zero-based) page and pagination metadata.
+url: "{{baseUrl}}/products?page=0&limit=3"
+method: GET
+queryParams:
+  page: "0"
+  limit: "3"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      const data = pm.response.json();
+      pm.test('Returns page 0 with at most 3 products', function () {
+          pm.expect(data.currentPage).to.eql(0);
+          pm.expect(data.products.length).to.be.at.most(3);
+          pm.expect(data).to.have.property('totalItems');
+          pm.expect(data).to.have.property('totalPages');
+      });
+    language: text/javascript
+order: 9000

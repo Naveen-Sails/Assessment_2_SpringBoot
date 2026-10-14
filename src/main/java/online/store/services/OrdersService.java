@@ -5,6 +5,8 @@ import online.store.repositories.OrderRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class OrdersService {
     private final OrderRepository orderRepository;
@@ -20,6 +22,10 @@ public class OrdersService {
     public void placeOrders(Iterable<Order> orders){
         validateNumberOfItemsOrdered(orders);
         orderRepository.saveAll(orders);
+    }
+
+    public List<Order> findOrdersByEmail(String email) {
+        return orderRepository.findByEmailWithProduct(email);
     }
 
     private void validateNumberOfItemsOrdered(Iterable<Order> orders){

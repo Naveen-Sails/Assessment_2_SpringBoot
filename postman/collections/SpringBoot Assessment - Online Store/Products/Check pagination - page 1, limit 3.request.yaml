@@ -1,0 +1,18 @@
+$kind: http-request
+description: Checks the next zero-based page.
+url: "{{baseUrl}}/products?page=1&limit=3"
+method: GET
+queryParams:
+  page: "1"
+  limit: "3"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      const data = pm.response.json();
+      pm.test('Returns page 1 with at most 3 products', function () {
+          pm.expect(data.currentPage).to.eql(1);
+          pm.expect(data.products.length).to.be.at.most(3);
+      });
+    language: text/javascript
+order: 10000

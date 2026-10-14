@@ -52,7 +52,7 @@ public class CheckoutControlller {
                     checkoutRequest.getEmail(),
                     checkoutRequest.getShippingAddress(),
                     productInfo.getQuantity(),
-                    productsService.getProductById(productInfo.getProductId()),
+                    productsService.getProductForOrder(productInfo.getProductId()),
                     checkoutRequest.getCreditCard()
             );
             orders.add(order);

@@ -1,0 +1,15 @@
+$kind: http-request
+description: Searches product names and descriptions.
+url: "{{baseUrl}}/products?search=laptop"
+method: GET
+queryParams:
+  search: laptop
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      pm.test('Finds a product matching laptop', function () {
+          pm.expect(pm.response.json().products.length).to.be.above(0);
+      });
+    language: text/javascript
+order: 6000

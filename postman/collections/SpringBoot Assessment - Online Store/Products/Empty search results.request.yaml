@@ -1,0 +1,15 @@
+$kind: http-request
+description: Checks a search term that should match no seeded product.
+url: "{{baseUrl}}/products?search=not-a-real-product"
+method: GET
+queryParams:
+  search: not-a-real-product
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      pm.test('Returns an empty product list', function () {
+          pm.expect(pm.response.json().products).to.be.empty;
+      });
+    language: text/javascript
+order: 11000

@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/checkout"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test@example.com",
+      "shippingAddress": "1 Test Street",
+      "creditCard": "12345",
+      "products": [
+        { "productId": {{productId}}, "quantity": 1 }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: pm.test('Invalid card format returns HTTP 400', function () { pm.response.to.have.status(400); });
+    language: text/javascript
+order: 5000

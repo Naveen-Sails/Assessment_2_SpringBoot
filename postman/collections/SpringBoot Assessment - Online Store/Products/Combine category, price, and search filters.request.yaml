@@ -1,0 +1,21 @@
+$kind: http-request
+description: Checks that category, price, and text filters are applied together.
+url: "{{baseUrl}}/products?category=electronics&minPrice=50&maxPrice=300&search=computer"
+method: GET
+queryParams:
+  category: electronics
+  minPrice: "50"
+  maxPrice: "300"
+  search: computer
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });
+      pm.response.json().products.forEach(function (product) {
+          pm.expect(product.category).to.eql('electronics');
+          pm.expect(product.priceUSD).to.be.at.least(50);
+          pm.expect(product.priceUSD).to.be.at.most(300);
+          pm.expect((product.name + ' ' + product.description).toLowerCase()).to.include('computer');
+      });
+    language: text/javascript
+order: 8000

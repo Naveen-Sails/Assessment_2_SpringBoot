@@ -1,0 +1,13 @@
+$kind: http-request
+name: "Invalid pagination - negative page (expected current behavior: HTTP 500)"
+description: Negative page input currently reaches PageRequest and is expected to return HTTP 500. Review this response as a validation/error-handling gap.
+url: "{{baseUrl}}/products?page=-1&limit=3"
+method: GET
+queryParams:
+  page: "-1"
+  limit: "3"
+scripts:
+  - type: afterResponse
+    code: pm.test('Invalid negative page currently returns HTTP 500', function () { pm.response.to.have.status(500); });
+    language: text/javascript
+order: 13000

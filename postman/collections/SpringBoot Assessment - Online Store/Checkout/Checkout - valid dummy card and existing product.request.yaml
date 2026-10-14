@@ -1,0 +1,28 @@
+$kind: http-request
+description: Uses the productId captured by Get all products and a dummy 16-digit card number.
+url: "{{baseUrl}}/checkout"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test@example.com",
+      "shippingAddress": "1 Test Street",
+      "creditCard": "1234567812345678",
+      "products": [
+        { "productId": {{productId}}, "quantity": 1 }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Checkout succeeds with valid request data', function () {
+          pm.response.to.have.status(200);
+          pm.expect(pm.response.text()).to.eql('success');
+      });
+    language: text/javascript
+order: 1000

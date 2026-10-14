@@ -1,0 +1,603 @@
+{
+  "info": {
+    "_postman_id": "a684c20c-feb9-4a0a-91a7-97a6ff567761",
+    "name": "SpringBoot Assessment - Online Store",
+    "description": "Manual API scenarios for the Spring Boot online store. Uses a dummy credit-card number; never use real payment details. Start the app on port 8081 before sending requests. Run Get all products first to set the productId collection variable used by checkout requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "productId",
+      "value": "1"
+    },
+    {
+      "key": "missingProductId",
+      "value": "999999"
+    }
+  ],
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/categories",
+            "description": "Lists all supported product categories."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns category names', function () {",
+                  "    pm.expect(pm.response.text()).to.include('toys');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get all products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products",
+            "description": "Lists products and saves the first returned product ID for checkout scenarios."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test('Returns a product list', function () {",
+                  "    pm.expect(data).to.have.property('products').that.is.an('array');",
+                  "    pm.expect(data.products.length).to.be.above(0);",
+                  "});",
+                  "if (data.products && data.products.length > 0) {",
+                  "    pm.collectionVariables.set('productId', String(data.products[0].id));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter by category - toys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?category=toys",
+            "description": "Checks that category filtering returns only toys."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.response.json().products.forEach(function (product) {",
+                  "    pm.expect(product.category).to.eql('toys');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter by category - no matching category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?category=does-not-exist",
+            "description": "Checks the empty-result case for a category that does not exist."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns no products', function () {",
+                  "    pm.expect(pm.response.json().products).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter by price - 10 to 50 inclusive",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?minPrice=10&maxPrice=50",
+            "description": "Checks the inclusive minimum and maximum price filters."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.response.json().products.forEach(function (product) {",
+                  "    pm.expect(product.priceUSD).to.be.at.least(10);",
+                  "    pm.expect(product.priceUSD).to.be.at.most(50);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search by text - laptop",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?search=laptop",
+            "description": "Searches product names and descriptions."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Finds a product matching laptop', function () {",
+                  "    pm.expect(pm.response.json().products.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search by text - uppercase LAPTOP",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?search=LAPTOP",
+            "description": "Checks that text search is case-insensitive."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Finds a product despite search casing', function () {",
+                  "    pm.expect(pm.response.json().products.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Combine category, price, and search filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?category=electronics&minPrice=50&maxPrice=300&search=computer",
+            "description": "Checks that category, price, and text filters are applied together."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.response.json().products.forEach(function (product) {",
+                  "    pm.expect(product.category).to.eql('electronics');",
+                  "    pm.expect(product.priceUSD).to.be.at.least(50);",
+                  "    pm.expect(product.priceUSD).to.be.at.most(300);",
+                  "    pm.expect((product.name + ' ' + product.description).toLowerCase()).to.include('computer');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check pagination - page 0, limit 3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?page=0&limit=3",
+            "description": "Checks the first (zero-based) page and pagination metadata."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test('Returns page 0 with at most 3 products', function () {",
+                  "    pm.expect(data.currentPage).to.eql(0);",
+                  "    pm.expect(data.products.length).to.be.at.most(3);",
+                  "    pm.expect(data).to.have.property('totalItems');",
+                  "    pm.expect(data).to.have.property('totalPages');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check pagination - page 1, limit 3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?page=1&limit=3",
+            "description": "Checks the next zero-based page."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test('Returns page 1 with at most 3 products', function () {",
+                  "    pm.expect(data.currentPage).to.eql(1);",
+                  "    pm.expect(data.products.length).to.be.at.most(3);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Empty search results",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?search=not-a-real-product",
+            "description": "Checks a search term that should match no seeded product."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns an empty product list', function () {",
+                  "    pm.expect(pm.response.json().products).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get deals - 6 products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/deals_of_the_day/6",
+            "description": "Requests up to six deals."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns no more than 6 deals', function () {",
+                  "    pm.expect(pm.response.json().products.length).to.be.at.most(6);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid pagination - negative page (expected current behavior: HTTP 500)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?page=-1&limit=3",
+            "description": "Negative page input currently reaches PageRequest and is expected to return HTTP 500. Review this response as a validation/error-handling gap."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invalid negative page currently returns HTTP 500', function () { pm.response.to.have.status(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid pagination - zero limit (expected current behavior: HTTP 500)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/products?page=0&limit=0",
+            "description": "A zero page size currently reaches PageRequest and is expected to return HTTP 500. Review this response as a validation/error-handling gap."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invalid zero limit currently returns HTTP 500', function () { pm.response.to.have.status(500); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        {
+          "name": "Checkout - valid dummy card and existing product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"test@example.com\",\n  \"shippingAddress\": \"1 Test Street\",\n  \"creditCard\": \"1234567812345678\",\n  \"products\": [\n    { \"productId\": {{productId}}, \"quantity\": 1 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/checkout",
+            "description": "Uses the productId captured by Get all products and a dummy 16-digit card number."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Checkout succeeds with valid request data', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.text()).to.eql('success');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout - missing credit card (expected HTTP 402)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"test@example.com\",\n  \"shippingAddress\": \"1 Test Street\",\n  \"products\": [\n    { \"productId\": {{productId}}, \"quantity\": 1 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing credit card returns HTTP 402', function () { pm.response.to.have.status(402); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout - missing first name (expected HTTP 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastName\": \"User\",\n  \"email\": \"test@example.com\",\n  \"shippingAddress\": \"1 Test Street\",\n  \"creditCard\": \"1234567812345678\",\n  \"products\": [\n    { \"productId\": {{productId}}, \"quantity\": 1 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing first name returns HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout - missing last name (expected HTTP 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"email\": \"test@example.com\",\n  \"shippingAddress\": \"1 Test Street\",\n  \"creditCard\": \"1234567812345678\",\n  \"products\": [\n    { \"productId\": {{productId}}, \"quantity\": 1 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Missing last name returns HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout - invalid card format (expected HTTP 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"test@example.com\",\n  \"shippingAddress\": \"1 Test Street\",\n  \"creditCard\": \"12345\",\n  \"products\": [\n    { \"productId\": {{productId}}, \"quantity\": 1 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invalid card format returns HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout - stolen card (expected HTTP 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"test@example.com\",\n  \"shippingAddress\": \"1 Test Street\",\n  \"creditCard\": \"1111111111111111\",\n  \"products\": [\n    { \"productId\": {{productId}}, \"quantity\": 1 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/checkout",
+            "description": "Uses the known rejected dummy number configured by this sample application."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejected card returns HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout - nonexistent product ID (expected current behavior: HTTP 500)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"test@example.com\",\n  \"shippingAddress\": \"1 Test Street\",\n  \"creditCard\": \"1234567812345678\",\n  \"products\": [\n    { \"productId\": {{missingProductId}}, \"quantity\": 1 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/checkout",
+            "description": "The current global exception handler maps a missing product to HTTP 500; consider this an error-handling gap, not a successful result."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Nonexistent product currently returns HTTP 500', function () { pm.response.to.have.status(500); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
