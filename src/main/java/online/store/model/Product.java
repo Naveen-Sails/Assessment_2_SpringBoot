@@ -1,14 +1,21 @@
 package online.store.model;
 
-import javax.persistence.*;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-/**
- * @author Michael Pogrebinsky - www.topdeveloperacademy.com
- * Represents a product stored in a database in the Products table.
- * You do not need to modify this file
- */
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
 @Entity
 @Table(name = "Products")
+@Getter
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,40 +25,5 @@ public class Product {
     private String imageFileName;
     private float priceUSD;
     private String category;
-
-    protected Product() {
-    }
-
-    public Product(String name, String description, String imageFileName, float priceUSD, String category) {
-        this.name = name;
-        this.description = description;
-        this.imageFileName = imageFileName;
-        this.priceUSD = priceUSD;
-        this.category = category;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getImageFileName() {
-        return imageFileName;
-    }
-
-    public float getPriceUSD() {
-        return priceUSD;
-    }
 
 }

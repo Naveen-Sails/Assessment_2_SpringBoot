@@ -1,14 +1,21 @@
 package online.store.model;
 
-import javax.persistence.*;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-/**
- * @author Michael Pogrebinsky - www.topdeveloperacademy.com
- * Represents a product category stored in a database.
- * You do not need to modify this file
- */
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
 @Entity
 @Table(name = "ProductCategories")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,14 +23,4 @@ public class ProductCategory {
 
     private String category;
 
-    public ProductCategory() {
-    }
-
-    public ProductCategory(String category) {
-        this.category = category;
-    }
-
-    public String getCategory() {
-        return category;
-    }
 }

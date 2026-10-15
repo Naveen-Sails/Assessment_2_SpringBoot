@@ -32,6 +32,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.category = :productCategory")
     List<Product> findByCategory(@Param("productCategory") String productCategory);
 
+    /**
+     * Applies only the filters that have values and returns the requested page.
+     * Search checks product names and descriptions without case sensitivity.
+     */
     @Query(
             value = "SELECT p FROM Product p " +
                     "WHERE (:category IS NULL OR :category = '' OR p.category = :category) " +
@@ -40,14 +44,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     "AND (:search IS NULL OR :search = '' " +
                     "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-                    "ORDER BY p.id",
-            countQuery = "SELECT COUNT(p) FROM Product p " +
-                    "WHERE (:category IS NULL OR :category = '' OR p.category = :category) " +
-                    "AND (:minPrice IS NULL OR p.priceUSD >= :minPrice) " +
-                    "AND (:maxPrice IS NULL OR p.priceUSD <= :maxPrice) " +
-                    "AND (:search IS NULL OR :search = '' " +
-                    "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
-                    "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))"
+                    "ORDER BY p.id"
     )
     Page<Product> findProducts(
             @Param("category") String category,
@@ -57,6 +54,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 
+    /**
+     * Returns at most the requested number of products from the first page.
+     */
     default List<Product> findAtMostNumberOfProducts(int numberOfProducts) {
         Page<Product> page = findAll(PageRequest.of(0, numberOfProducts));
         return page.toList();
