@@ -3,34 +3,28 @@ package online.store.controllers;
 import online.store.model.ProductDTO;
 import online.store.model.wrappers.ProductWrapper;
 import online.store.services.ProductsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.stream.Collectors;
-
 @RestController
+@RequiredArgsConstructor
 public class HomepageController {
     private final ProductsService productService;
- 
-    public HomepageController(ProductsService productService) {
-        this.productService = productService;
-    }
 
     @GetMapping("/categories")
-    public String getProductCategories(){
-        return productService.getAllSupportedCategories()
-                .stream()
-                .collect(Collectors.joining(","));
+    public String getProductCategories() {
+        return productService.getSupportedCategoriesResponse();
     }
 
     @GetMapping("/deals_of_the_day/{number_of_products}")
     public ProductWrapper<ProductDTO> getDealsOfTheDay(
             @PathVariable(name = "number_of_products") int numberOfProducts
     ) {
-        return new ProductWrapper<>(productService.getDealsOfTheDay(numberOfProducts));
+        return ProductWrapper.fromList(productService.getDealsOfTheDay(numberOfProducts));
     }
 
     @GetMapping("/products")
@@ -50,7 +44,7 @@ public class HomepageController {
                 page,
                 limit
         );
-        return new ProductWrapper<>(products);
+        return ProductWrapper.fromPage(products);
     }
 
 
