@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,6 +96,29 @@ public class ProductsService {
                 .orElseThrow(() -> new ProductNotFoundException(
                         String.format("Product with id %s doesn't exist", id)
                 ));
+    }
+
+    public List<ProductDTO> getProductsInMemoryPaginated(int page, int limit) {
+        //Fetch ALL records from the database
+        List<Product> allProducts = productRepository.findAll();
+
+        //Normalize 1-based page index and limit
+        int validPage = Math.max(page, 1);
+        int validLimit = Math.max(limit, 1);
+
+        int fromIndex = (validPage - 1) * validLimit;
+
+        //Handle out-of-bounds requests
+        if (fromIndex >= allProducts.size()) {
+            return Collections.emptyList();
+        }
+
+        //Using Java Stream skip() and limit()
+        return allProducts.stream()
+                .skip(fromIndex)
+                .limit(validLimit)
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
     }
 
 }

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class HomepageController {
@@ -47,5 +49,13 @@ public class HomepageController {
         return ProductWrapper.fromPage(products);
     }
 
+    @GetMapping("/products/in-memory")
+    public ProductWrapper<ProductDTO> getProductsInMemory(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
+
+        List<ProductDTO> paginatedProducts = productService.getProductsInMemoryPaginated(page, limit);
+        return ProductWrapper.fromList(paginatedProducts);
+    }
 
 }
