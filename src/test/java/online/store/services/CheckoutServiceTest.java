@@ -5,6 +5,7 @@ import online.store.exceptions.MissingCreditCardException;
 import online.store.model.CheckoutRequest;
 import online.store.model.Order;
 import online.store.model.Product;
+import online.store.services.impl.CheckoutServiceImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -33,7 +34,7 @@ public class CheckoutServiceTest {
     private CreditCardValidationService creditCardValidationService;
 
     @InjectMocks
-    private CheckoutService checkoutService;
+    private CheckoutServiceImpl checkoutService;
 
     @Test
     public void checkoutPersistsAllProductsInOneBatch() {
